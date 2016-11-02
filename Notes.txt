@@ -1,0 +1,19 @@
+* Upload the script and xml files
+* Run chmod a+x *.sh
+* Run ./run-provision.sh (this just wraps executing provision.sh but writes output to a log file too)
+* Run . ~/.bashrc to load the new environment variables
+* Replace placeholders for container, storage account and access keys in /etc/hadoop/conf/core-site.xml and /etc/hbase/conf/hbase-site.xml
+* Run the following commands (replacing the container and storage account names as appropriate):
+	hadoop fs -mkdir /user
+	hadoop fs -mkdir /user/$USER
+	hadoop fs -Dfs.defaultFS=wasb://{HBase Container}@{Storage Account}.blob.core.windows.net -mkdir /hbase
+* Run sudo $HBASE_HOME/bin/start-hbase.sh
+
+
+
+
+
+
+
+
+
