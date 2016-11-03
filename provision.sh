@@ -9,8 +9,9 @@ sudo apt-get install -y oracle-java8-installer
 sudo apt-get install -y ssh
 sudo apt-get install -y rsync
 
+pushd /usr/local
+
 echo "Checkpoint: Installing hadoop"
-cd /usr/local
 sudo wget http://mirrors.ukfast.co.uk/sites/ftp.apache.org/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
 sudo tar xzf hadoop-2.7.3.tar.gz
 sudo mv hadoop-2.7.3 hadoop
@@ -22,13 +23,16 @@ sudo tar xzf hbase-1.2.3-bin.tar.gz
 sudo mv hbase-1.2.3 hbase
 sudo rm hbase-1.2.3-bin.tar.gz
 
+popd
+
 echo "Checkpoint: Removing version numbers from hbase lib jars"
 shopt -s extglob
-cd /usr/local/hbase/lib
+pushd /usr/local/hbase/lib
 for i in *-*([0-9]).*([0-9]).*([0-9]).jar
 do
   sudo cp "$i" "$(echo "$i" | sed 's/-[0-9]*\.[0-9]*\.[0-9]*\.jar$/\.jar/')"
 done
+popd
 
 echo "Checkpoint: Exporting environment variables"
 echo export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre >> ~/.bashrc
