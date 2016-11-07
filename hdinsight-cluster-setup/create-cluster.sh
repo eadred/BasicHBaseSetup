@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Will need to have logged in to azure with 'azure login' before running this
+# Will need to have logged in to azure with 'azure login' and called 'azure config mode arm' before running this
 
 if [ -z "$CLUSTER_RG" ]; then
   echo "CLUSTER_RG (resource group) not specified"

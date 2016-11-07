@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Will need to have logged in to azure with 'azure login' before running this
+# Will need to have logged in to azure with 'azure login' and called 'azure config mode arm' before running this
 
 if [ -z "$CLUSTER_NAME" ]; then
   echo "CLUSTER_NAME name not specified"
