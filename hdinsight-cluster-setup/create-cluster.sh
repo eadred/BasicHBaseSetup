@@ -23,6 +23,11 @@ if [ -z "$STORAGE_ACCT" ]; then
   exit -1
 fi
 
+if [ -z "$RESULTS_CNT" ]; then
+  echo "RESULTS_CNT (results container) not specified"
+  exit -1
+fi
+
 # Use 'azure vm sizes --location=$LOC' to get the list of possibilities
 # These are the minimum sizes that can be used with the cluster
 WORKER_NODE_SIZE=Standard_A3
@@ -48,6 +53,16 @@ echo $CLUSTER_PW > ./cluster-pw
 echo $CLUST_SSH_UN > ./cluster-ssh-un
 echo $CLUSTER_SSH_PW > ./cluster-ssh-pw
 echo $CLUSTER_NAME > ./cluster-name
+
+echo Creating cluster config
+RES_ROOT_PATH=wasb://$RESULTS_CNT@$STORAGE_ACCT.blob.core.windows.net
+CLUSTER_CONFIG="./clusterconfig"
+azure hdinsight config create -v --configFilePath $CLUSTER_CONFIG --overwrite true # For some reaosn not having the -v option means this command hangs
+azure hdinsight config add-config-values \
+  --configFilePath $CLUSTER_CONFIG \
+  -s $SUB_ID \
+  --core-site fs.azure.page.blob.dir=$RES_ROOT_PATH/hbase/WALs,$RES_ROOT_PATH/hbase/oldWALs,/mapreducestaging,$RES_ROOT_PATH/hbase/MasterProcWALs,/atshistory,/tezstaging,/ams/hbase \
+  --hbase-site hbase.rootdir=$RES_ROOT_PATH/hbase
 
 echo Creating container $STORAGE_CNT
 azure storage container create \
@@ -76,7 +91,6 @@ azure hdinsight cluster create \
 	--password $CLUSTER_PW \
 	--sshUserName $CLUST_SSH_UN \
 	--sshPassword $CLUSTER_SSH_PW \
+  --configurationPath $CLUSTER_CONFIG \
 	-s $SUB_ID \
 	$CLUSTER_NAME
-
-#--configurationPath <configuration file path> \
