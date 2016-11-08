@@ -39,6 +39,7 @@ echo $CLUST_UN > ./cluster-un
 echo $CLUSTER_PW > ./cluster-pw
 echo $CLUST_SSH_UN > ./cluster-ssh-un
 echo $CLUSTER_SSH_PW > ./cluster-ssh-pw
+echo $CLUSTER_NAME > ./cluster-name
 
 echo Creating container $STORAGE_CNT
 azure storage container create \
