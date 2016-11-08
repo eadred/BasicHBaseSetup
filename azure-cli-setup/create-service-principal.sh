@@ -30,3 +30,10 @@ azure role assignment create \
   -o Contributor \
   -g $CLUSTER_RG \
   --subscription $SUB_ID
+
+#Also store the tenant and app Ids for use when we are logging on as the application
+azure account show --json | jq '.[0].tenantId' | sed 's/"\(.*\)"/\1/' > tenantid
+echo $CREATE_JSON | jq '.appId' | sed 's/"\(.*\)"/\1/' > appid
+
+# Can log in with something like this;
+#azure login -u $(cat appid) -p $APP_PW --service-principal --tenant $(cat tenantid)
