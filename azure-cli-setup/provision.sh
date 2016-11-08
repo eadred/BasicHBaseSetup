@@ -18,3 +18,9 @@ echo "Updated npm"
 sudo npm install -g azure-cli
 
 echo "Installed Azure CLI"
+
+# Disable telemetry so we don't get prompted the first time we try and do anything
+# with the Azure CLI
+azure telemetry -d
+
+echo "Done"
