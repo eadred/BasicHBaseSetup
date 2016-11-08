@@ -35,8 +35,10 @@ CLUSTER_PW=$(pwgen -ycn1 10)
 CLUST_SSH_UN=$(gpw 1 8)
 CLUSTER_SSH_PW=$(pwgen -ycn1 10)
 
-echo Cluster un: $CLUST_UN pw: $CLUSTER_PW
-echo Cluster SSH un: $CLUST_SSH_UN pw: $CLUSTER_SSH_PW
+echo $CLUST_UN > ./cluster-un
+echo $CLUSTER_PW > ./cluster-pw
+echo $CLUST_SSH_UN > ./cluster-ssh-un
+echo $CLUSTER_SSH_PW > ./cluster-ssh-pw
 
 echo Creating container $STORAGE_CNT
 azure storage container create \
