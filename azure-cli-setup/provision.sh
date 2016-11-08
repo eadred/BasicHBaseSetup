@@ -8,6 +8,7 @@ echo "Installed node"
 sudo apt-get install -y jq
 sudo apt-get install -y pwgen
 sudo apt-get install -y gpw
+sudo apt-get install -y sshpass
 
 echo "Installed utils"
 
