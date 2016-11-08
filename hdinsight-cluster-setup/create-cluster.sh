@@ -13,6 +13,11 @@ if [ -z "$CLUSTER_LOC" ]; then
   exit -1
 fi
 
+if [ -z "$CLUSTER_VNET" ]; then
+  echo "CLUSTER_VNET (cluster virtual network name) not specified"
+  exit -1
+fi
+
 if [ -z "$STORAGE_ACCT" ]; then
   echo "STORAGE_ACCT (storage account) not specified"
   exit -1
@@ -29,6 +34,9 @@ SUB_ID=$(azure account list --json | jq '.[0].id' | sed 's/"\(.*\)"/\1/')
 STORAGE_ACCT_KEY=$(azure storage account keys list -g $CLUSTER_RG --json $STORAGE_ACCT | jq '.[0].value' | sed 's/"\(.*\)"/\1/')
 export CLUSTER_NAME=ia-cluster-$(head /dev/urandom | tr -dc a-z0-9 | head -c 10 ; echo '')
 STORAGE_CNT=$(echo $CLUSTER_NAME)-container
+VNET_CONFIG=$(azure network vnet show --json -g $CLUSTER_RG -n $CLUSTER_VNET)
+VNET_ID=$(echo $VNET_CONFIG | jq '.id' | sed 's/"\(.*\)"/\1/')
+SUBNET_ID=$(echo $VNET_CONFIG | jq '.subnets[0].id' | sed 's/"\(.*\)"/\1/')
 
 CLUST_UN=$(gpw 1 8)
 CLUSTER_PW=$(pwgen -ycn1 10)
@@ -58,6 +66,8 @@ azure hdinsight cluster create \
 	--defaultStorageAccountName $STORAGE_ACCT.blob.core.windows.net \
 	--defaultStorageAccountKey $STORAGE_ACCT_KEY \
 	--defaultStorageContainer $STORAGE_CNT \
+	--virtualNetworkId $VNET_ID \
+	--subnetName $SUBNET_ID \
 	--headNodeSize $HEAD_NODE_SIZE \
 	--workerNodeCount $WORKER_NODE_COUNT \
 	--workerNodeSize $WORKER_NODE_SIZE \
