@@ -30,7 +30,7 @@
 	</property>
 	<property>
   		<name>fs.azure.page.blob.dir</name>
-  		<value>wasb://{HBaseContainer}@{StorageAccount}.blob.core.windows.net/hbase/WALs,wasb://{HBaseContainer}@{StorageAccount}.blob.core.windows.net/hbase/oldWALs,wasb://{HBaseContainer}@{StorageAccount}.blob.core.windows.net/hbase/MasterProcWALs</value>
+  		<value>wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase/WALs,wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase/oldWALs,wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase/MasterProcWALs</value>
 	</property>
 	<property>
   		<name>fs.azure.page.blob.size</name>
@@ -42,6 +42,6 @@
 	</property>
 	<property>
   		<name>fs.azure.atomic.rename.dir</name>
-  		<value>wasb://{HBaseContainer}@{StorageAccount}.blob.core.windows.net/hbase</value>
+  		<value>wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase</value>
 	</property>
 </configuration>

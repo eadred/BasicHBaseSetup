@@ -23,7 +23,7 @@
 <configuration>
 	<property>
 		<name>hbase.rootdir</name>
-		<value>wasb://{HBaseContainer}@{StorageAccount}.blob.core.windows.net/hbase</value>
+		<value>wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase</value>
 	</property>
 	<property>
 		<name>hbase.cluster.distributed</name>

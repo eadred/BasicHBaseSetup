@@ -1,5 +1,25 @@
 SCRIPTDIR=$(dirname $0)
 
+if [ -z "$STORAGE_ACCT" ]; then
+  echo "STORAGE_ACCT (storage account) not specified"
+  exit -1
+fi
+
+if [ -z "$STORAGE_ACCT_KEY" ]; then
+  echo "STORAGE_ACCT_KEY (storage account key) not specified"
+  exit -1
+fi
+
+if [ -z "$DEF_FS_CNT" ]; then
+  echo "DEF_FS_CNT (default file system container) not specified"
+  exit -1
+fi
+
+if [ -z "$RESULTS_CNT" ]; then
+  echo "RESULTS_CNT (results container) not specified"
+  exit -1
+fi
+
 echo "Checkpoint: Provisioning..."
 
 echo "Checkpoint: Installing base packages"
@@ -50,12 +70,22 @@ sudo mkdir /etc/hbase
 sudo ln -s /usr/local/hbase/conf /etc/hbase/conf
 
 echo "Checkpoint: Updating hadoop core-site.xml settings"
-sudo rm /etc/hadoop/conf/core-site.xml
-sudo cp $SCRIPTDIR/core-site.xml /etc/hadoop/conf/core-site.xml
+sudo cp /etc/hadoop/conf/core-site.xml /etc/hadoop/conf/core-site.xml.orig
+cat $SCRIPTDIR/core-site.xml \
+  | sed "s/{StorageAccount}/$STORAGE_ACCT/g" \
+  | sed "s/{AccessKey}/$STORAGE_ACCT_KEY/g" \
+  | sed "s/{DefaultFsContainer}/$DEF_FS_CNT/g" \
+  | sed "s/{ResultsContainer}/$RESULTS_CNT/g" \
+  | sudo tee /etc/hadoop/conf/core-site.xml
 
 echo "Checkpoint: Updating hbase-site.xml settings"
-sudo rm /etc/hbase/conf/hbase-site.xml
-sudo cp $SCRIPTDIR/hbase-site.xml /etc/hbase/conf/hbase-site.xml
+sudo cp /etc/hbase/conf/hbase-site.xml /etc/hbase/conf/hbase-site.xml.orig
+cat $SCRIPTDIR/hbase-site.xml \
+  | sed "s/{StorageAccount}/$STORAGE_ACCT/g" \
+  | sed "s/{AccessKey}/$STORAGE_ACCT_KEY/g" \
+  | sed "s/{DefaultFsContainer}/$DEF_FS_CNT/g" \
+  | sed "s/{ResultsContainer}/$RESULTS_CNT/g" \
+  | sudo tee /etc/hbase/conf/hbase-site.xml
 
 echo "Checkpoint: Updating hbase-env.sh settings"
 sudo sed -i \
