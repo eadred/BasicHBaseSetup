@@ -28,6 +28,9 @@ if [ -z "$RESULTS_CNT" ]; then
   exit -1
 fi
 
+echo Creating cluster in $CLUSTER_LOC in resource group $CLUSTER_RG on virtual network $CLUSTER_VNET
+echo Using results storage $RESULTS_CNT@$STORAGE_ACCT
+
 # Use 'azure vm sizes --location=$LOC' to get the list of possibilities
 # These are the minimum sizes that can be used with the cluster
 WORKER_NODE_SIZE=Standard_A3
