@@ -37,7 +37,7 @@ WORKER_NODE_COUNT=1
 
 SUB_ID=$(azure account list --json | jq '.[0].id' | sed 's/"\(.*\)"/\1/')
 STORAGE_ACCT_KEY=$(azure storage account keys list -g $CLUSTER_RG --json $STORAGE_ACCT | jq '.[0].value' | sed 's/"\(.*\)"/\1/')
-export CLUSTER_NAME=ia-cluster-$(head /dev/urandom | tr -dc a-z0-9 | head -c 10 ; echo '')
+export CLUSTER_NAME=$(head /dev/urandom | tr -dc a-z0-9 | head -c 10 ; echo '')-ia-cluster
 STORAGE_CNT=$(echo $CLUSTER_NAME)-container
 VNET_CONFIG=$(azure network vnet show --json -g $CLUSTER_RG -n $CLUSTER_VNET)
 VNET_ID=$(echo $VNET_CONFIG | jq '.id' | sed 's/"\(.*\)"/\1/')
