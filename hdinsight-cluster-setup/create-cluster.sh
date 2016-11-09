@@ -38,9 +38,20 @@ HEAD_NODE_SIZE=Standard_A3
 ZK_NODE_SIZE=Standard_A2
 WORKER_NODE_COUNT=1
 
+randstr () {
+  if $2; then
+    local PATTERN=a-z0-9
+  else
+    local PATTERN=a-z
+  fi
+
+  echo $(head /dev/urandom | tr -dc $PATTERN | head -c $1 ; echo '')
+}
+
 SUB_ID=$(azure account list --json | jq '.[0].id' | sed 's/"\(.*\)"/\1/')
 STORAGE_ACCT_KEY=$(azure storage account keys list -g $CLUSTER_RG --json $STORAGE_ACCT | jq '.[0].value' | sed 's/"\(.*\)"/\1/')
-export CLUSTER_NAME=$(head /dev/urandom | tr -dc a-z0-9 | head -c 10 ; echo '')-ia-cluster
+#Cluster name has to start with a letter and only contain lower case letters, numbers and dashes
+CLUSTER_NAME=$(randstr 1 false)$(randstr 9 true)-ia-cluster
 STORAGE_CNT=$(echo $CLUSTER_NAME)-container
 VNET_CONFIG=$(azure network vnet show --json -g $CLUSTER_RG -n $CLUSTER_VNET)
 VNET_ID=$(echo $VNET_CONFIG | jq '.id' | sed 's/"\(.*\)"/\1/')
