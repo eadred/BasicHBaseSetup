@@ -81,6 +81,9 @@ cat $SCRIPTDIR/core-site.xml \
   | sed "s/{ResultsContainer}/$RESULTS_CNT/g" \
   | sudo tee /etc/hadoop/conf/core-site.xml
 
+# Need HBase to be aware of the Hadoop settings also, in particular the page blob directories
+sudo ln -s /etc/hadoop/conf/core-site.xml /etc/hbase/conf/core-site.xml
+
 echo "Checkpoint: Updating hbase-site.xml settings"
 sudo cp /etc/hbase/conf/hbase-site.xml /etc/hbase/conf/hbase-site.xml.orig
 cat $SCRIPTDIR/hbase-site.xml \
