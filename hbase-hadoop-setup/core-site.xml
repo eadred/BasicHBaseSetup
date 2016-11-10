@@ -44,4 +44,15 @@
   		<name>fs.azure.atomic.rename.dir</name>
   		<value>wasb://{ResultsContainer}@{StorageAccount}.blob.core.windows.net/hbase</value>
 	</property>
+
+	<!-- OOZIE -->
+ 	 <property>
+    		<name>hadoop.proxyuser.oozie.hosts</name>
+    		<value>*</value>
+  	</property>
+  	<property>
+    		<name>hadoop.proxyuser.oozie.groups</name>
+    		<value>*</value>
+  	</property>
+
 </configuration>

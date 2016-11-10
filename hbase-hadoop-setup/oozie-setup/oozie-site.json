@@ -1,0 +1,10 @@
+{
+   "oozie.service.JPAService.jdbc.driver" : "com.mysql.jdbc.Driver",
+   "oozie.service.JPAService.jdbc.url" : "jdbc:mysql://localhost:3306/oozie",
+   "oozie.service.JPAService.jdbc.username" : "oozie",
+   "oozie.service.JPAService.jdbc.password" : "oozie",
+   "oozie.service.HadoopAccessorService.hadoop.configurations" : "*=/usr/local/hadoop/etc/hadoop",
+   "oozie.service.WorkflowAppService.system.libpath" : "wasb://blob1@iaannastorage.blob.core.windows.net/user/${user.name}/share/lib",
+
+   "oozie.service.HadoopAccessorService.supported.filesystems" : "hdfs,hftp,webhdfs,asv,wasb,asvs,wasbs,swebhdfs,adl"
+}
