@@ -18,21 +18,24 @@ sudo sed -i "s~</profiles>~$JAVA_DOC_PROFILE</profiles>~" oozie-4.1.0/pom.xml
 
 
 ########### Install mysql and create oozie DB ###########
-echo "Install and set mysql server .......... "
-sudo apt-get update
-sudo apt-get install mysql-server
+echo "Install and set mysql server ......................................... "
+export DEBIAN_FRONTEND="noninteractive"
+sudo debconf-set-selections <<< "mysql-server mysql-server/root_password password "
+sudo debconf-set-selections <<< "mysql-server mysql-server/root_password_again password "
+sudo apt-get install -y mysql-server
 sudo mysql -u root < oozie-db.sql
 
 
 # Build oozie
-echo "Building oozie ........."
-sudo apt-get install maven
+echo "Building oozie ........................................................"
+sudo apt-get -y update
+sudo apt-get -y install maven
 sudo ./oozie-4.1.0/bin/mkdistro.sh -DskipTests -Phadoop-2  -DjavaVersion=1.8 -DjavaTargetVersion=1.8
 sudo cp -r oozie-4.1.0/distro/target/oozie-4.1.0-distro/oozie-4.1.0/ /usr/local/oozie
 
 
 ################## Install extra libs #########################
-echo "Installing extra libraries ........"
+echo "Installing extra libraries ............................................"
 sudo mkdir /usr/local/oozie/libext
 sudo curl -O http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
 sudo cp ext-2.2.zip /usr/local/oozie/libext/
@@ -45,7 +48,7 @@ sudo rm mysql-connector-java-5.1.31.tar.gz
 
 ############## Make oozie work with Azure Blobs #################
 # Install tool for work with JSON 
-sudo apt install jq
+sudo apt -y install jq
 sudo sed -i ':a;N;$!ba;s/\n/NEWLINE/g' /usr/local/oozie/conf/oozie-site.xml
 PARAMS_NUMBER=$(jq<"oozie-site.json" '.params | length')
 for (( i=0; i<$PARAMS_NUMBER; i++ ))
@@ -68,24 +71,20 @@ sudo cp /usr/local/hadoop/share/hadoop/tools/lib/*.jar /usr/local/oozie/libext/
 
 
 # Add oozie user and set priviliges for him
-sudo adduser oozie
 sudo mkdir /usr/local/oozie/logs
-
-sudo chown oozie /usr/local/oozie -R
 sudo chmod a+rwx -R /usr/local/oozie
 
 
 ############ Setup Oozie server ###############
-su oozie
 pushd /usr/local/oozie 
 sudo bin/oozie-setup.sh db create -run
 
-sudo apt-get install zip
+sudo apt-get -y install zip
 sudo bin/oozie-setup.sh prepare-war
 
-sudo bin/oozie-setup.sh sharelib create -fs wasb://blob1@iaannastorage.blob.core.windows.net
+#sudo bin/oozie-setup.sh sharelib create -fs wasb://blob1@iaannastorage.blob.core.windows.net
 
-sudo bin/oozied.sh start
+#sudo bin/oozied.sh start
 
 # Update ~/.bashrc  to contain Oozie path and Oozie url
 sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
