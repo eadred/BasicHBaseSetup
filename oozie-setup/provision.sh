@@ -92,7 +92,7 @@ sudo bin/oozie-setup.sh prepare-war
 # Update ~/.bashrc  to contain Oozie path and Oozie url
 sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
 sudo echo "export OOZIE_URL=http://$(hostname -f)/oozie/" >> ~/.bashrc
-sudo source ~/.bashrc 
+source ~/.bashrc 
 
 
 
