@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sudo wget http://archive.apache.org/dist/oozie/4.1.0/oozie-4.1.0.tar.gz
 sudo tar -xvf oozie-4.1.0.tar.gz
 sudo rm oozie-4.1.0.tar.gz
@@ -8,7 +10,7 @@ sudo rm oozie-4.1.0.tar.gz
 CODEHAUS_URL="https://repository-master.mulesoft.org/nexus/content/groups/public/"
 sudo sed -i "s~http://repository.codehaus.org/~$CODEHAUS_URL~" oozie-4.1.0/pom.xml
 
-# Adding java-doc profile
+# Adding a profile to ignore java-doclint warnings regardless of java version used
 JAVA_DOC_PROFILE=$(<java-doc-profile.txt)
 # Remove new-line symbols
 JAVA_DOC_PROFILE=$(sed ':a;N;$!ba;s/\n/ /g' <<< $JAVA_DOC_PROFILE)
@@ -85,6 +87,10 @@ sudo bin/oozie-setup.sh sharelib create -fs wasb://blob1@iaannastorage.blob.core
 
 sudo bin/oozied.sh start
 
-# Update ~/.bashrc  to contain Oozie path
-sudo echo "export PATH=$PATH:/usr/local/oozie/bin" << ~/.bashrc 
+# Update ~/.bashrc  to contain Oozie path and Oozie url
+sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
+sudo echo "export OOZIE_URL=http://$(hostname -f)/oozie/" >> ~/.bashrc
 sudo source ~/.bashrc 
+
+
+
