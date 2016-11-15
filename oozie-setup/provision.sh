@@ -17,16 +17,9 @@ JAVA_DOC_PROFILE=$(sed ':a;N;$!ba;s/\n/ /g' <<< $JAVA_DOC_PROFILE)
 sudo sed -i "s~</profiles>~$JAVA_DOC_PROFILE</profiles>~" oozie-4.1.0/pom.xml
 
 
-########### Install mysql and create oozie DB ###########
-echo "Install and set mysql server ......................................... "
-# Download and Install the Latest Updates for the OS
-sudo apt-get update && apt-get upgrade -y
-# Install MySQL Server in a Non-Interactive mode. No password for root
-echo "mysql-server-5.6 mysql-server/root_password password " | sudo debconf-set-selections
-echo "mysql-server-5.6 mysql-server/root_password_again password " | sudo debconf-set-selections
-apt-get -y install mysql-server-5.6
-
-sudo mysql -u root < oozie-db.sql
+########### Create oozie DB ###########
+echo "Create oozie db ......................................... "
+sudo mysql -u root -proot < oozie-db.sql
 
 
 # Build oozie
