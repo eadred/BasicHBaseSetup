@@ -57,10 +57,23 @@ VNET_CONFIG=$(azure network vnet show --json -g $CLUSTER_RG -n $CLUSTER_VNET)
 VNET_ID=$(echo $VNET_CONFIG | jq '.id' | sed 's/"\(.*\)"/\1/')
 SUBNET_ID=$(echo $VNET_CONFIG | jq '.subnets[0].id' | sed 's/"\(.*\)"/\1/')
 
+generate_password(){
+    PASSWD=
+    for (( i=1; i <=2; i++ ))
+    do
+        TMP_PWD=$(pwgen -ycn1 6)
+        PASSWD=$PASSWD$TMP_PWD
+    done
+
+    echo $PASSWD
+}
+
 CLUST_UN=$(gpw 1 8)
-CLUSTER_PW=$(pwgen -ycn1 10)
+#CLUSTER_PW=$(pwgen -ycn1 10)
+CLUSTER_RW=$(generate_password)
 CLUST_SSH_UN=$(gpw 1 8)
-CLUSTER_SSH_PW=$(pwgen -ycn1 10)
+#CLUSTER_SSH_PW=$(pwgen -ycn1 10)
+CLUSTER_SSH_PW=$(generate_password)
 
 echo $CLUST_UN > ./cluster-un
 echo $CLUSTER_PW > ./cluster-pw
