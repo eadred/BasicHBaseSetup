@@ -72,7 +72,7 @@ sudo chmod a+rwx -R /usr/local/oozie
 
 # Update ~/.bashrc  to contain Oozie path and Oozie url
 sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
-sudo echo "export OOZIE_URL=http://$(hostname -f)/oozie/" >> ~/.bashrc
+sudo echo "export OOZIE_URL=http://$(hostname -f):11000/oozie/" >> ~/.bashrc
 source ~/.bashrc 
 
 ############ Setup Oozie server ###############
