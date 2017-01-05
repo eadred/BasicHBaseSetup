@@ -1,0 +1,13 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = "lucene-test"
+  config.vm.network :private_network, ip: "192.168.0.43"
+
+  config.vm.provider :virtualbox do |vb|
+  end
+
+  config.vm.provision "shell", path: "provision.sh", env: {
+    "STORAGE_ACCT" => "fill me in",
+    "STORAGE_ACCT_KEY" => "fill me in",
+    "SHARE_NAME" => "fill me in"}
+end
