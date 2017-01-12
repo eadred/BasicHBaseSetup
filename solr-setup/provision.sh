@@ -61,8 +61,9 @@ echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/hadoop/share/hadoop/t
 popd
 
 
-echo "Checkpoint: Updating Solr configs"
 pushd solr/server
+
+echo "Checkpoint: Updating Solr configs"
 pushd solr/configsets/data_driven_schema_configs/conf
 
 sudo mv solrconfig.xml solrconfig.xml.orig
@@ -85,11 +86,26 @@ cat solrconfig.xml.orig \
 
 popd
 
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar solr-webapp/webapp/WEB-INF/lib
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.7.2.jar solr-webapp/webapp/WEB-INF/lib
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/jetty-util-6.1.26.jar solr-webapp/webapp/WEB-INF/lib
+echo "Checkpoint: Copying dependencies"
+
+pushd solr-webapp/webapp/WEB-INF/lib
+
+sudo rm solr-core-6.3.0.jar
+sudo cp $SCRIPTDIR/solr-core-6.3.0.jar .
+
+sudo cp /usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar .
+sudo cp /usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.7.2.jar .
+sudo cp /usr/local/hadoop/share/hadoop/tools/lib/jetty-util-6.1.26.jar .
+popd
+
+pushd ../dist
+sudo rm solr-core-6.3.0.jar
+sudo cp $SCRIPTDIR/solr-core-6.3.0.jar .
+popd
 
 popd
+
+
 
 sudo mkdir /var/solr
 sudo mkdir /var/solr/logs
