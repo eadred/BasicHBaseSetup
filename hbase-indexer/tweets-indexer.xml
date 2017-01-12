@@ -1,0 +1,7 @@
+<indexer table="tweets">
+        <field name="tstamp" value="cr:tstamp" type="string"/>
+        <field name="content" value="cr:content" type="string"/>
+        <field name="sc" value="enh:snt" type="float"/>
+	<field name="lat" value="cr:lat" type="float"/>
+	<field name="long" value="cr:long" type="float"/>
+</indexer>

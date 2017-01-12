@@ -1,0 +1,19 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = "hbase-solr-indexer"
+  config.vm.network :private_network, ip: "192.168.1.44"
+  config.vm.network "forwarded_port", guest: 8983, host: 8983 # Solr
+
+  config.vm.provider :virtualbox do |vb|
+    vb.memory = 2048
+    vb.cpus = 2
+  end
+
+  config.vm.synced_folder ".", "/vagrant"
+
+  config.vm.provision "shell", path: "provision.sh", env: {
+    "STORAGE_ACCT" => "iargdiag685",
+    "STORAGE_ACCT_KEY" => "xXIUwNiyhHqP5BXOr7gD5nxOOOdbJPj+lPc//6fUdWX4nqDVrK5AyfB3jX4Y3W9/s71zIkQXx5aV29/0wL9xQw==",
+    "DEF_FS_CNT" => "results",
+    "IS_MASTER" => 1}
+end
