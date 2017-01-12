@@ -70,6 +70,10 @@ sudo cp /usr/local/hadoop/share/hadoop/tools/lib/*.jar /usr/local/oozie/libext/
 sudo mkdir /usr/local/oozie/logs
 sudo chmod a+rwx -R /usr/local/oozie
 
+# Update ~/.bashrc  to contain Oozie path and Oozie url
+sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
+sudo echo "export OOZIE_URL=http://$(hostname -f):11000/oozie/" >> ~/.bashrc
+source ~/.bashrc 
 
 ############ Setup Oozie server ###############
 pushd /usr/local/oozie 
@@ -82,10 +86,6 @@ sudo bin/oozie-setup.sh prepare-war
 
 #sudo bin/oozied.sh start
 
-# Update ~/.bashrc  to contain Oozie path and Oozie url
-sudo echo "export PATH=$PATH:/usr/local/oozie/bin" >> ~/.bashrc 
-sudo echo "export OOZIE_URL=http://$(hostname -f)/oozie/" >> ~/.bashrc
-source ~/.bashrc 
 
 
 
