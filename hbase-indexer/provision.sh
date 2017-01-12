@@ -15,6 +15,11 @@ if [ -z "$DEF_FS_CNT" ]; then
   exit -1
 fi
 
+if [ -z "$RESULTS_CNT" ]; then
+  echo "RESULTS_CNT (results container) not specified"
+  exit -1
+fi
+
 echo Storage account is $STORAGE_ACCT
 echo Storage account key is $STORAGE_ACCT_KEY
 echo Default file system container is $DEF_FS_CNT
