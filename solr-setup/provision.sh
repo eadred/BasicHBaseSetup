@@ -19,8 +19,6 @@ echo Storage account is $STORAGE_ACCT
 echo Storage account key is $STORAGE_ACCT_KEY
 echo Default file system container is $DEF_FS_CNT
 
-echo "Checkpoint: Provisioning..."
-
 
 echo "Checkpoint: Installing base packages"
 sudo apt-get install -y software-properties-common
@@ -32,7 +30,18 @@ sudo apt-get install -y oracle-java8-installer
 sudo apt-get install -y ssh
 sudo apt-get install -y rsync
 
-pushd /usr/local
+
+# Some useful paths
+ROOT_DIR=/usr/local
+SOLR_SERVER_DIR=$ROOT_DIR/solr/server
+SOLR_CONF_DIR=$SOLR_SERVER_DIR/solr/configsets/data_driven_schema_configs/conf
+SOLR_WEBAPP_LIB_DIR=$SOLR_SERVER_DIR/solr-webapp/webapp/WEB-INF/lib
+SOLR_BIN_DIR=$ROOT_DIR/solr/bin
+HADOOP_CONF_DIR=$ROOT_DIR/hadoop/etc/hadoop
+HADOOP_TOOLS_LIB_DIR=$ROOT_DIR/hadoop/share/hadoop/tools/lib
+
+
+pushd $ROOT_DIR
 
 echo "Checkpoint: Fetching Solr"
 sudo wget http://apache.mirror.anlx.net/lucene/solr/6.3.0/solr-6.3.0.tgz
@@ -46,7 +55,10 @@ sudo tar xzf hadoop-2.7.2.tar.gz
 sudo mv hadoop-2.7.2 hadoop
 sudo rm hadoop-2.7.2.tar.gz
 
-pushd hadoop/etc/hadoop
+popd
+
+
+pushd $HADOOP_CONF_DIR
 sudo cp mapred-site.xml.template mapred-site.xml
 sudo mv core-site.xml core-site.xml.orig
 cat $SCRIPTDIR/core-site.xml \
@@ -57,14 +69,12 @@ cat $SCRIPTDIR/core-site.xml \
 
 echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.7.2.jar:/usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar' \
   | sudo tee -a ./hadoop-env.sh
-  
+
 popd
 
 
-pushd solr/server
-
-echo "Checkpoint: Updating Solr configs"
-pushd solr/configsets/data_driven_schema_configs/conf
+echo "Checkpoint: Updating solrconfig.xml"
+pushd $SOLR_CONF_DIR
 
 sudo mv solrconfig.xml solrconfig.xml.orig
 cat solrconfig.xml.orig \
@@ -86,36 +96,35 @@ cat solrconfig.xml.orig \
 
 popd
 
-echo "Checkpoint: Copying dependencies"
 
-pushd solr-webapp/webapp/WEB-INF/lib
+echo "Checkpoint: Copying Solr dependencies"
 
+pushd $SOLR_WEBAPP_LIB_DIR
 sudo rm solr-core-6.3.0.jar
 sudo cp $SCRIPTDIR/solr-core-6.3.0.jar .
-
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar .
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.7.2.jar .
-sudo cp /usr/local/hadoop/share/hadoop/tools/lib/jetty-util-6.1.26.jar .
+sudo cp $HADOOP_TOOLS_LIB_DIR/azure-storage-2.0.0.jar .
+sudo cp $HADOOP_TOOLS_LIB_DIR/hadoop-azure-2.7.2.jar .
+sudo cp $HADOOP_TOOLS_LIB_DIR/jetty-util-6.1.26.jar .
 popd
 
-pushd ../dist
+pushd $SOLR_SERVER_DIR/../dist
 sudo rm solr-core-6.3.0.jar
 sudo cp $SCRIPTDIR/solr-core-6.3.0.jar .
 popd
 
-popd
 
-
-
+echo "Checkpoint: Updating misc Solr configuration"
 sudo mkdir /var/solr
 sudo mkdir /var/solr/logs
 sudo chmod a+w /var/solr/logs
-echo HADOOP_CLASSPATH=$(/usr/local/hadoop/bin/hadoop classpath) | sudo tee -a solr/bin/solr.in.sh
-echo 'CLASSPATH=$CLASSPATH:$HADOOP_CLASSPATH' | sudo tee -a solr/bin/solr.in.sh
-echo SOLR_LOGS_DIR=/var/solr/logs | sudo tee -a solr/bin/solr.in.sh
+echo HADOOP_CLASSPATH=$(/usr/local/hadoop/bin/hadoop classpath) | sudo tee -a $SOLR_BIN_DIR/solr.in.sh
+echo 'CLASSPATH=$CLASSPATH:$HADOOP_CLASSPATH' | sudo tee -a $SOLR_BIN_DIR/solr.in.sh
+echo SOLR_LOGS_DIR=/var/solr/logs | sudo tee -a $SOLR_BIN_DIR/solr.in.sh
 
 
 if [ "$IS_MASTER" ]; then
+  pushd $ROOT_DIR
+
   echo "Checkpoint: Fetching Zookeeper"
   sudo wget http://apache.mirror.anlx.net/zookeeper/zookeeper-3.4.9/zookeeper-3.4.9.tar.gz
   sudo tar xzf zookeeper-3.4.9.tar.gz
@@ -128,10 +137,11 @@ if [ "$IS_MASTER" ]; then
   cat zoo_sample.cfg \
     | sed "s/dataDir=.*$/dataDir=\/var\/lib\/zookeeper/" \
     | sudo tee ./zoo.cfg
+
+  popd
   popd
 fi
 
-popd
 
 echo "Checkpoint: Exporting environment variables"
 pushd /etc/profile.d
