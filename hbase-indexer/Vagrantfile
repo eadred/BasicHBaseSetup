@@ -16,5 +16,5 @@ Vagrant.configure("2") do |config|
     # "STORAGE_ACCT_KEY" => "change.me",
     # "DEF_FS_CNT" => "change.me",
     # "RESULTS_CNT" => "change.me",
-    "IS_MASTER" => 1}
+    }
 end
