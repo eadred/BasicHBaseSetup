@@ -24,6 +24,8 @@ echo Storage account is $STORAGE_ACCT
 echo Storage account key is $STORAGE_ACCT_KEY
 echo Default file system container is $DEF_FS_CNT
 
+ROOT_DIR=/usr/local
+
 echo "Checkpoint: Provisioning..."
 
 echo "Checkpoint: Installing base packages"
@@ -36,7 +38,7 @@ sudo apt-get install -y oracle-java8-installer
 sudo apt-get install -y ssh
 sudo apt-get install -y rsync
 
-pushd /usr/local
+pushd $ROOT_DIR
 
 echo "Checkpoint: Fetching Hadoop jars"
 sudo wget http://apache.mirror.anlx.net/hadoop/common/hadoop-2.5.2/hadoop-2.5.2.tar.gz
@@ -84,11 +86,9 @@ cat /vagrant/core-site.xml \
   | sed "s@{ResultsContainer}@$RESULTS_CNT@g" \
   | sudo tee /etc/hadoop/conf/core-site.xml
 
-pushd /usr/local/hadoop/etc/hadoop
-echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.6.0.2.2.5.2-7.jar:/usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar' \
-  | sudo tee -a ./hadoop-env.sh
-  
-popd
+echo "Checkpoint: Copying azure jars"
+sudo cp $SCRIPTDIR/hadoop-azure-2.6.0.2.2.5.2-7.jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.6.0.2.2.5.2-7.jar
+sudo cp $SCRIPTDIR/azure-storage-2.0.0.jar /usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar
 
 echo "Checkpoint: Updating hbase-site.xml settings"
 sudo cp /etc/hbase/conf/hbase-site.xml /etc/hbase/conf/hbase-site.xml.orig
@@ -113,79 +113,47 @@ sudo sed -i "s/localhost/$(hostname)/" /etc/hbase/conf/regionservers
 echo -e "\n# HBase related configuration\n$ip $(hostname)" | sudo tee -a /etc/hosts
 sudo sed -i "s/{HostName}/$(hostname)/" /etc/hbase/conf/hbase-site.xml
 
+HBASE_INDEXER_DIR=$ROOT_DIR/hbase-indexer
+echo $ROOT_DIR
 
-pushd /usr/local
-echo "Checkpoint: Fetching Solr"
-sudo wget http://apache.mirror.anlx.net/lucene/solr/5.5.3/solr-5.5.3.tgz
-sudo tar xzf solr-5.5.3.tgz
-sudo mv solr-5.5.3 solr
-sudo rm solr-5.5.3.tgz
-
-echo "Checkpoint: Updating Solr configs"
-pushd solr/server/solr/configsets/data_driven_schema_configs/conf
-sudo cp solrconfig.xml.orig solrconfig.xml
-sudo sed -i 's|<autoCommit>|<autoCommit>\n\t<maxDocs>1000</maxDocs>|' solrconfig.xml
-popd
-
-sudo mkdir /var/solr
-sudo mkdir /var/solr/logs
-sudo chmod a+w /var/solr/logs
-echo HADOOP_CLASSPATH=$(/usr/local/hadoop/bin/hadoop classpath) | sudo tee -a solr/bin/solr.in.sh
-echo 'CLASSPATH=$CLASSPATH:$HADOOP_CLASSPATH' | sudo tee -a solr/bin/solr.in.sh
-echo SOLR_LOGS_DIR=/var/solr/logs | sudo tee -a solr/bin/solr.in.sh
-
-echo "Checkpoint: Start Solr in cloud mode"
-pushd solr/bin
-sudo ./solr start -e cloud -noprompt
-popd
-
-popd
-
-
-echo "Checkpoint: Exporting environment variables"
-pushd /etc/profile.d
-sudo touch env_vars.sh
-sudo chmod a+x env_vars.sh
-echo export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre | sudo tee -a env_vars.sh
-popd
-
-
-echo "Checkpoint: Installing git and maven"
-sudo apt-get install -y git
-sudo apt-get install -y maven
+echo "Checkpoint: Solr setup"
+sudo ./solr-setup.sh
 
 echo "Checkpoint: Fetching hbase-indexer"
-pushd /usr/local
+pushd $ROOT_DIR
 sudo git clone https://github.com/lucidworks/hbase-indexer.git hbase-indexer
+popd
 
-pushd hbase-indexer
+pushd $HBASE_INDEXER_DIR
 sudo mvn clean package -DskipTests -Dhbase.api=1.1.2
+popd
 
 echo "Checkpoint: Configuring hbase-indexer"
-pushd conf
+pushd $HBASE_INDEXER_DIR/conf
 sudo cp hbase-indexer-site.xml hbase-indexer-site.xml.orig
 cat /vagrant/hbase-indexer-site.xml \
   | sed "s/{HostName}/$(hostname)/g" \
   | sudo tee hbase-indexer-site.xml
-sudo cp /usr/local/hbase/conf/hbase-site.xml hbase-site.xml
+sudo cp $ROOT_DIR/hbase/conf/hbase-site.xml hbase-site.xml
 popd
 
-popd
 
 echo "Checkpoint: Copying hbase-indexer jars"
-sudo cp hbase-indexer/hbase-sep/hbase-sep-api/target/hbase-sep-api-*.jar hbase/lib
-sudo cp hbase-indexer/hbase-sep/hbase-sep-impl/target/hbase-sep-impl-common-*.jar hbase/lib
-sudo cp hbase-indexer/hbase-sep/hbase-sep-impl-1.1.2/target/hbase-sep-impl-*-hbase1.1.2.jar hbase/lib
-sudo cp hbase-indexer/hbase-sep/hbase-sep-tools/target/hbase-sep-tools-*.jar hbase/lib
+pushd $HBASE_INDEXER_DIR/hbase-sep
+sudo cp hbase-sep-api/target/hbase-sep-api-*.jar $ROOT_DIR/hbase/lib
+sudo cp hbase-sep-impl/target/hbase-sep-impl-common-*.jar $ROOT_DIR/hbase/lib
+sudo cp hbase-sep-impl-1.1.2/target/hbase-sep-impl-*-hbase1.1.2.jar $ROOT_DIR/hbase/lib
+sudo cp hbase-sep-tools/target/hbase-sep-tools-*.jar $ROOT_DIR/hbase/lib
+popd
+
+echo "Checkpoint: Updating hbase-indexer-env.sh settings"
+sudo sed -i \
+  -e 's|.*export JAVA_HOME=.*$|export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre|' \
+  -e 's|.*export HBASE_CLASSPATH=.*$|export HBASE_CLASSPATH="/usr/local/hadoop/share/hadoop/tools/lib/*"|' \
+  $HBASE_INDEXER_DIR/conf/hbase-indexer-env.sh
 
 echo "Checkpoint: Start Hbase"
-pushd hbase/bin
+pushd $ROOT_DIR/hbase/bin
 sudo ./start-hbase.sh
 popd
 
-echo "Checkpoint: Start Hbase indexer Daemon"
-pushd hbase-indexer/bin
-sudo ./hbase-indexer server &
-popd
-
-popd
