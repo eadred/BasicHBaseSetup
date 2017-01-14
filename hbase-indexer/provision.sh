@@ -1,4 +1,4 @@
-SCRIPTDIR=$(dirname $0)
+SCRIPTDIR=/vagrant
 
 if [ -z "$STORAGE_ACCT" ]; then
   echo "STORAGE_ACCT (storage account) not specified"
@@ -23,8 +23,11 @@ fi
 echo Storage account is $STORAGE_ACCT
 echo Storage account key is $STORAGE_ACCT_KEY
 echo Default file system container is $DEF_FS_CNT
+echo Results container is $RESULT_CNT
 
 ROOT_DIR=/usr/local
+HADOOP_DIR=$ROOT_DIR/hadoop
+HBASE_INDEXER_DIR=$ROOT_DIR/hbase-indexer
 
 echo "Checkpoint: Provisioning..."
 
@@ -52,15 +55,15 @@ sudo tar xzf hbase-1.1.2-bin.tar.gz
 sudo mv hbase-1.1.2 hbase
 sudo rm hbase-1.1.2-bin.tar.gz
 
-popd
-
 echo "Checkpoint: Removing version numbers from hbase lib jars"
 shopt -s extglob
-pushd /usr/local/hbase/lib
+pushd hbase/lib
 for i in *-*([0-9]).*([0-9]).*([0-9]).jar
 do
   sudo cp "$i" "$(echo "$i" | sed 's/-[0-9]*\.[0-9]*\.[0-9]*\.jar$/\.jar/')"
 done
+popd
+
 popd
 
 echo "Checkpoint: Exporting environment variables"
@@ -87,8 +90,10 @@ cat /vagrant/core-site.xml \
   | sudo tee /etc/hadoop/conf/core-site.xml
 
 echo "Checkpoint: Copying azure jars"
-sudo cp $SCRIPTDIR/hadoop-azure-2.6.0.2.2.5.2-7.jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-azure-2.6.0.2.2.5.2-7.jar
-sudo cp $SCRIPTDIR/azure-storage-2.0.0.jar /usr/local/hadoop/share/hadoop/tools/lib/azure-storage-2.0.0.jar
+pushd $HADOOP_DIR
+sudo cp $SCRIPTDIR/hadoop-azure-2.6.0.2.2.5.2-7.jar $HADOOP_DIR/share/hadoop/tools/lib/hadoop-azure-2.6.0.2.2.5.2-7.jar
+sudo cp $SCRIPTDIR/azure-storage-2.0.0.jar $HADOOP_DIR/share/hadoop/tools/lib/azure-storage-2.0.0.jar
+popd
 
 echo "Checkpoint: Updating hbase-site.xml settings"
 sudo cp /etc/hbase/conf/hbase-site.xml /etc/hbase/conf/hbase-site.xml.orig
@@ -113,17 +118,19 @@ sudo sed -i "s/localhost/$(hostname)/" /etc/hbase/conf/regionservers
 echo -e "\n# HBase related configuration\n$ip $(hostname)" | sudo tee -a /etc/hosts
 sudo sed -i "s/{HostName}/$(hostname)/" /etc/hbase/conf/hbase-site.xml
 
-HBASE_INDEXER_DIR=$ROOT_DIR/hbase-indexer
-echo $ROOT_DIR
-
 echo "Checkpoint: Solr setup"
-sudo ./solr-setup.sh
+sudo ./$SCRIPTDIR/solr-setup.sh
+
+echo "Checkpoint: Install git, maven packages"
+sudo apt-get install -y git
+sudo apt-get install -y maven
 
 echo "Checkpoint: Fetching hbase-indexer"
 pushd $ROOT_DIR
 sudo git clone https://github.com/lucidworks/hbase-indexer.git hbase-indexer
 popd
 
+echo "Checkpoint: Install hbase-indexer"
 pushd $HBASE_INDEXER_DIR
 sudo mvn clean package -DskipTests -Dhbase.api=1.1.2
 popd
@@ -131,7 +138,7 @@ popd
 echo "Checkpoint: Configuring hbase-indexer"
 pushd $HBASE_INDEXER_DIR/conf
 sudo cp hbase-indexer-site.xml hbase-indexer-site.xml.orig
-cat /vagrant/hbase-indexer-site.xml \
+cat $SCRIPTDIR/hbase-indexer-site.xml \
   | sed "s/{HostName}/$(hostname)/g" \
   | sudo tee hbase-indexer-site.xml
 sudo cp $ROOT_DIR/hbase/conf/hbase-site.xml hbase-site.xml
@@ -152,8 +159,4 @@ sudo sed -i \
   -e 's|.*export HBASE_CLASSPATH=.*$|export HBASE_CLASSPATH="/usr/local/hadoop/share/hadoop/tools/lib/*"|' \
   $HBASE_INDEXER_DIR/conf/hbase-indexer-env.sh
 
-echo "Checkpoint: Start Hbase"
-pushd $ROOT_DIR/hbase/bin
-sudo ./start-hbase.sh
-popd
-
+echo "Done!"

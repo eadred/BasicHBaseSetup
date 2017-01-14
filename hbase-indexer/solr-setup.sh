@@ -36,11 +36,10 @@ HADOOP_CONF_DIR=$ROOT_DIR/hadoop/etc/hadoop
 HADOOP_TOOLS_LIB_DIR=$ROOT_DIR/hadoop/share/hadoop/tools/lib
 
 echo "Checkpoint: Fetching Solr"
-echo $ROOT_DIR
-#sudo wget http://apache.mirror.anlx.net/lucene/solr/5.5.3/solr-5.5.3.tgz
+sudo wget http://apache.mirror.anlx.net/lucene/solr/5.5.3/solr-5.5.3.tgz
 sudo tar xzf solr-5.5.3.tgz
 sudo mv solr-5.5.3 $ROOT_DIR/solr
-#sudo rm solr-5.5.3.tgz
+sudo rm solr-5.5.3.tgz
 
 echo "Checkpoint: Updating solrconfig.xml"
 sudo mv $SOLR_CONF_DIR/solrconfig.xml $SOLR_CONF_DIR/solrconfig.xml.orig
