@@ -16,10 +16,15 @@ popd
 
 echo "Checkpoint: Start solr in cloud mode"
 pushd solr/bin
-sudo ./solr start -e cloud
+sudo ./solr start -e cloud -noprompt
 popd
 
 popd
+
+echo "Checkpoint: create Hbase tables"
+hbase shell create 'tweets', 'cr', 'enh', 'usr', SPLITS=> ['99999999999999999999', 'KKKKKKKKKKKKKKKKKKKK', 'TTTTTTTTTTTTTTTTTTTT', 'dddddddddddddddddddd', 'nnnnnnnnnnnnnnnnnnnn']
+hbase shell create 'tmp-params', 'cf'
+hbase shell create 'tmp-results', 'cf'
 
 echo "Checkpoint: set REPLICATION_SCOPE to 1 for 'tweets' table"
 hbase shell disable 'tweets'
