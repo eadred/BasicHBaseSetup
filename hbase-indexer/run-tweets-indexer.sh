@@ -5,9 +5,11 @@ HBASE_INDEXER_DIR=$ROOT_DIR/hbase-indexer
 SOLR_DIR=$ROOT_DIR/solr
 
 pushd $ROOT_DIR
+
 echo "Checkpoint: Start Hbase"
 pushd hbase/bin
 sudo ./start-hbase.sh
+popd
 
 echo "Checkpoint: Start hbase-indexer"
 pushd hbase-indexer/bin
@@ -22,14 +24,10 @@ popd
 popd
 
 echo "Checkpoint: create Hbase tables"
-hbase shell create 'tweets', 'cr', 'enh', 'usr', SPLITS=> ['99999999999999999999', 'KKKKKKKKKKKKKKKKKKKK', 'TTTTTTTTTTTTTTTTTTTT', 'dddddddddddddddddddd', 'nnnnnnnnnnnnnnnnnnnn']
-hbase shell create 'tmp-params', 'cf'
-hbase shell create 'tmp-results', 'cf'
+hbase shell ./create-tables.txt
 
 echo "Checkpoint: set REPLICATION_SCOPE to 1 for 'tweets' table"
-hbase shell disable 'tweets'
-hbase shell alter 'tweets', {NAME => 'cr', REPLICATION_SCOPE => 1}
-hbase shell enable 'tweets'
+hbase shell ./switch_replication_on.txt
 
 echo "Checkpoint: add tweets indexer"
 pushd $HBASE_INDEXER_DIR

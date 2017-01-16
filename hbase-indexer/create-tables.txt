@@ -1,0 +1,3 @@
+create 'tweets', 'cr', 'enh', 'usr', SPLITS=> ['99999999999999999999', 'KKKKKKKKKKKKKKKKKKKK', 'TTTTTTTTTTTTTTTTTTTT', 'dddddddddddddddddddd', 'nnnnnnnnnnnnnnnnnnnn']
+create 'tmp-params', 'cf'
+create 'tmp-results', 'cf'

@@ -1,0 +1,5 @@
+disable 'tweets'
+alter 'tweets', {NAME => 'cr', REPLICATION_SCOPE => 1}
+alter 'tweets', {NAME => 'enh', REPLICATION_SCOPE => 1}
+alter 'tweets', {NAME => 'usr', REPLICATION_SCOPE => 1}
+enable 'tweets'
