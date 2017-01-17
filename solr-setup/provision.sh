@@ -15,6 +15,11 @@ if [ -z "$DEF_FS_CNT" ]; then
   exit -1
 fi
 
+if [ -z "$COLLECTION" ]; then
+  echo "COLLECTION (Solr collection name) not specified"
+  exit -1
+fi
+
 echo Storage account is $STORAGE_ACCT
 echo Storage account key is $STORAGE_ACCT_KEY
 echo Default file system container is $DEF_FS_CNT
@@ -34,7 +39,8 @@ sudo apt-get install -y rsync
 # Some useful paths
 ROOT_DIR=/usr/local
 SOLR_SERVER_DIR=$ROOT_DIR/solr/server
-SOLR_CONF_DIR=$SOLR_SERVER_DIR/solr/configsets/data_driven_schema_configs/conf
+SOLR_HOME_DIR=$SOLR_SERVER_DIR/solr
+SOLR_CONF_TEMPLATE_DIR=$SOLR_HOME_DIR/configsets/data_driven_schema_configs/conf
 SOLR_WEBAPP_LIB_DIR=$SOLR_SERVER_DIR/solr-webapp/webapp/WEB-INF/lib
 SOLR_BIN_DIR=$ROOT_DIR/solr/bin
 HADOOP_CONF_DIR=$ROOT_DIR/hadoop/etc/hadoop
@@ -74,10 +80,15 @@ popd
 
 
 echo "Checkpoint: Updating solrconfig.xml"
-pushd $SOLR_CONF_DIR
+pushd $SOLR_HOME_DIR
+sudo mkdir $COLLECTION
 
-sudo mv solrconfig.xml solrconfig.xml.orig
-cat solrconfig.xml.orig \
+echo name=$COLLECTION | sudo tee $COLLECTION/core.properties
+echo collection=$COLLECTION | sudo tee -a $COLLECTION/core.properties
+
+sudo cp -r $SOLR_CONF_TEMPLATE_DIR $COLLECTION
+
+cat $COLLECTION/conf/solrconfig.xml \
   | sed "s/{solr.lock.type:.*}/{solr.lock.type:hdfs}/" \
   | sed 's/{solr.directoryFactory:solr.NRTCachingDirectoryFactory}"\/>/{solr.directoryFactory:solr.HdfsDirectoryFactory}">/' \
   | sed '/{solr.directoryFactory:solr.HdfsDirectoryFactory}">/a\
@@ -92,7 +103,7 @@ cat solrconfig.xml.orig \
     <lib dir="\/usr\/local\/hadoop\/share\/hadoop\/common" regex=".*\.jar" />\
     <lib path="\/usr\/local\/hadoop\/share\/hadoop\/tools\/lib\/azure-storage-2.0.0.jar" \/>\
     <lib path="\/usr\/local\/hadoop\/share\/hadoop\/tools\/lib\/hadoop-azure-2.7.2.jar" \/>' \
-  | sudo tee ./solrconfig.xml
+  | sudo tee $COLLECTION/conf/solrconfig.xml
 
 popd
 
