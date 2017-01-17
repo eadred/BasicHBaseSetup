@@ -16,6 +16,21 @@
 
 <!-- Put site-specific property overrides in this file. -->
 <configuration>
+<property>
+		<!-- This setting key is case sensitive when used by Solr -->
+    <name>fs.AbstractFileSystem.wasb.impl</name>
+    <value>org.apache.hadoop.fs.azure.Wasb</value>
+	</property>
+	<property>
+		<name>fs.defaultFS</name>
+		<value>wasb://{DefaultFsContainer}@{StorageAccount}.blob.core.windows.net</value>
+	</property>
+	<property>
+		<name>fs.wasb.impl</name>
+		<value>org.apache.hadoop.fs.azure.NativeAzureFileSystem</value>
+	</property>
+
+
 	<property>
     <name>fs.AbstractFileSystem.wasb.Impl</name>
     <value>org.apache.hadoop.fs.azure.Wasb</value>

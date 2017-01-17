@@ -119,7 +119,7 @@ echo -e "\n# HBase related configuration\n$ip $(hostname)" | sudo tee -a /etc/ho
 sudo sed -i "s/{HostName}/$(hostname)/" /etc/hbase/conf/hbase-site.xml
 
 echo "Checkpoint: Solr setup"
-sudo .$SCRIPTDIR/solr-setup.sh
+sudo ./solr-setup.sh
 
 echo "Checkpoint: Install git, maven packages"
 sudo apt-get install -y git
